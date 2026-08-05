@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 class QuestionRepositoryTest {
 
     @Autowired
@@ -29,19 +29,19 @@ class QuestionRepositoryTest {
     @DisplayName("findAll")
     void t1() {
         List<Question> all = this.questionRepository.findAll();
-        //select * from question;
+        // select * from question;
+
         assertEquals(2, all.size());
 
         Question q = all.get(0);
         assertEquals("sbb가 무엇인가요?", q.getSubject());
     }
 
-
     @Test
     @DisplayName("findById")
     void t2() {
         Optional<Question> oq = this.questionRepository.findById(1);
-        //select * from question where id = 1;
+        // select * from question where id = 1
         if(oq.isPresent()) {
             Question q = oq.get();
             assertEquals("sbb가 무엇인가요?", q.getSubject());
@@ -52,7 +52,7 @@ class QuestionRepositoryTest {
     @DisplayName("findBySubject")
     void t3() {
         Question q = this.questionRepository.findBySubject("sbb가 무엇인가요?").get();
-        //select * from question where subject = 'sbb가 무엇인가요?'
+        // select * from question where subject = 'sbb가 무엇인가요?'
         assertEquals(1, q.getId());
     }
 
@@ -74,14 +74,14 @@ class QuestionRepositoryTest {
 
     @Test
     @DisplayName("데이터 수정")
-    @Transactional
     void t6() {
         Optional<Question> oq = this.questionRepository.findById(1);
         assertTrue(oq.isPresent());
+//        assertThat(oq.get().getSubject()).isEqualTo("sbb가 무엇인가요?");
         Question q = oq.get();
         q.setSubject("수정된 제목");
 
-//        this.questionRepository.save(q);
+        this.questionRepository.save(q);
 
         Question q2 = this.questionRepository.findById(1).get();
         assertEquals("수정된 제목", q2.getSubject());
@@ -116,26 +116,37 @@ class QuestionRepositoryTest {
     @Test
     @DisplayName("답변 데이터 생성2")
     @Transactional
-    @Rollback(value = false)
     void t9() {
         Question question2 = questionRepository.findById(2).get();
 
         Answer answer = new Answer();
         answer.setContent("답변 내용");
         answer.setQuestion(question2);
+        answer.setCreateDate(LocalDateTime.now());
 
         question2.getAnswers().add(answer);
         questionRepository.save(question2);
+
+        questionRepository.flush();
+
+        Answer answer2 = answerRepository.findById(2).get();
+        assertEquals(1, this.answerRepository.count());
+        assertEquals("답변 내용", answer2.getContent());
     }
 
     @Test
-    @DisplayName("생성한 답변 조회")
+    @DisplayName("답변 데이터 생성3")
     @Transactional
     void t10() {
-        Answer answer2 = answerRepository.findById(1).get();
-        assertEquals(1, answerRepository.count());
+        Question question2 = questionRepository.findById(2).get();
+
+        question2.addAnswer("답변 내용");
+        questionRepository.save(question2);
+
+        questionRepository.flush();
+
+        Answer answer2 = answerRepository.findById(3).get();
+        assertEquals(1, this.answerRepository.count());
         assertEquals("답변 내용", answer2.getContent());
-
     }
-
 }
