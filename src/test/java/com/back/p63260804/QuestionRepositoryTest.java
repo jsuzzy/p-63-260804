@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -45,6 +47,7 @@ class QuestionRepositoryTest {
     @DisplayName("findBySubject")
     void t3() {
         Question q = this.questionRepository.findBySubject("sbb가 무엇인가요?").get();
+        //select * from question where subject = 'sbb가 무엇인가요?'
         assertEquals(1, q.getId());
     }
 
@@ -62,6 +65,22 @@ class QuestionRepositoryTest {
         List<Question> qList = this.questionRepository.findBySubjectLike("sbb%");
         Question q = qList.get(0);
         assertEquals("sbb가 무엇인가요?", q.getSubject());
+    }
+
+    @Test
+    @DisplayName("데이터 수정")
+    @Transactional
+    void t6() {
+        Optional<Question> oq = this.questionRepository.findById(1);
+        assertTrue(oq.isPresent());
+        Question q = oq.get();
+        q.setSubject("수정된 제목");
+
+//        this.questionRepository.save(q);
+
+        Question q2 = this.questionRepository.findById(1).get();
+        assertEquals("수정된 제목", q2.getSubject());
+
     }
 
 }
