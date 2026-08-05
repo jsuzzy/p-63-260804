@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,8 @@ class QuestionRepositoryTest {
 
     @Test
     @DisplayName("답변 데이터 생성")
-    void testJpa() {
+    @Transactional
+    void t8() {
         Question question = this.questionRepository.findById(2).get();
 
         Answer a = new Answer();
@@ -109,6 +111,31 @@ class QuestionRepositoryTest {
         a.setQuestion(question);  // 어떤 질문의 답변인지 알기위해서 Question 객체가 필요하다.
         a.setCreateDate(LocalDateTime.now());
         this.answerRepository.save(a);
+    }
+
+    @Test
+    @DisplayName("답변 데이터 생성2")
+    @Transactional
+    @Rollback(value = false)
+    void t9() {
+        Question question2 = questionRepository.findById(2).get();
+
+        Answer answer = new Answer();
+        answer.setContent("답변 내용");
+        answer.setQuestion(question2);
+
+        question2.getAnswers().add(answer);
+        questionRepository.save(question2);
+    }
+
+    @Test
+    @DisplayName("생성한 답변 조회")
+    @Transactional
+    void t10() {
+        Answer answer2 = answerRepository.findById(1).get();
+        assertEquals(1, answerRepository.count());
+        assertEquals("답변 내용", answer2.getContent());
+
     }
 
 }
