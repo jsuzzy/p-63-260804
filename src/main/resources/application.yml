@@ -1,14 +1,11 @@
 spring:
   application:
     name: p-63-260804
-
   output:
     ansi:
       enabled: always
-
   profiles:
     active: dev
-
   jpa:
     properties:
       hibernate:
@@ -19,8 +16,8 @@ spring:
       ddl-auto: update
     show-sql: true
 
-  logging:
-    level:
-      org.hibernate.orm.jdbc.bind: TRACE
-      org.hibernate.orm.jdbc.extract: TRACE
-      org.springframework.transaction.interceptor: TRACE
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
