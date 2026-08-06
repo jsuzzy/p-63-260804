@@ -1,4 +1,5 @@
 package com.back.p63260804;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,14 +25,19 @@ public class Question {
 
     private LocalDateTime createDate;
 
-    @OneToMany(mappedBy = "question", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "question",
+            cascade = {CascadeType.REMOVE,
+                    CascadeType.PERSIST},
+            fetch = FetchType.LAZY)
     private List<Answer> answers = new ArrayList<>();
 
-    public void addAnswer(String content){
+    public Answer addAnswer(String content) {
         Answer answer = new Answer();
         answer.setContent(content);
         answer.setQuestion(this);
 
         this.answers.add(answer);
+
+        return answer;
     }
 }

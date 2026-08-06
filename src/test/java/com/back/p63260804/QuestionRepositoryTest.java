@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 class QuestionRepositoryTest {
 
     @Autowired
@@ -125,28 +124,32 @@ class QuestionRepositoryTest {
         answer.setCreateDate(LocalDateTime.now());
 
         question2.getAnswers().add(answer);
-        questionRepository.save(question2);
-
+//        questionRepository.save(question2); //save -> persist, merge
         questionRepository.flush();
 
-        Answer answer2 = answerRepository.findById(2).get();
+        Answer answer2 = answerRepository.findById(answer.getId()).get();
         assertEquals(1, this.answerRepository.count());
         assertEquals("답변 내용", answer2.getContent());
     }
 
     @Test
-    @DisplayName("답변 데이터 생성3")
+    @DisplayName("답변 데이터 생성3 - Question의 addAnswer() 메서드 사용. 가장 객체지향적")
     @Transactional
     void t10() {
         Question question2 = questionRepository.findById(2).get();
 
-        question2.addAnswer("답변 내용");
-        questionRepository.save(question2);
-
+        Answer answer = question2.addAnswer("답변 내용");
         questionRepository.flush();
 
-        Answer answer2 = answerRepository.findById(3).get();
-        assertEquals(1, this.answerRepository.count());
+        Answer answer2 = answerRepository.findById(answer.getId()).get();
         assertEquals("답변 내용", answer2.getContent());
+    }
+
+    @Test
+    @DisplayName("2번 질문의 답글 조회")
+    void t11() {
+        Question q2 = questionRepository.findById(2).get();
+        System.out.println("q2.getSubject() = " + q2.getSubject());
+        Answer a1 = q2.getAnswers().get(0); //이때 DB 조회를 한다.
     }
 }
